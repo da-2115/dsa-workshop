@@ -16,7 +16,7 @@ void bubble_sort(std::vector<int>& vec)
         for (size_t j = 0; j < vec.size() - i - 1; ++j)
         {
             // If vec at index j is greater than vec at the next index j + 1
-            if(vec[j] > vec[j + 1])
+            if (vec[j] > vec[j + 1])
             {
                 // Swap the two elements using the standard library swap function and set swapped to true
                 std::swap(vec[j], vec[j + 1]);

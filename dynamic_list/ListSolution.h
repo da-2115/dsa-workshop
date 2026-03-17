@@ -8,27 +8,44 @@ template<class T>
 class List
 {
 private:
-    std::unique_ptr<T[]> elements;
+    T* elements;
     size_t size;
     size_t capacity;
     
-    void resize()
+    void resize(size_t new_capacity)
     {
-        size_t new_capacity = capacity == 0 ? 1 : capacity * 2;
-        std::unique_ptr<T[]> new_elements(new T[new_capacity]);
+        T* new_elements = new T[new_capacity];
         
         for (size_t i = 0; i < size; ++i)
         {
             new_elements[i] = elements[i];
         }
         
-        elements = std::move(new_elements);
+        delete[] elements;
+        elements = new_elements;
         capacity = new_capacity;
     }
     
+    void shrink_capacity()
+    {
+        // Only shrink if we're using less than 1/4 of capacity and capacity > 1
+        if (capacity > 1 && size <= capacity / 4)
+        {
+            size_t new_capacity = capacity / 2;
+            if (new_capacity < 1) new_capacity = 1;
+            resize(new_capacity);
+        }
+    }
+    
 public:
-    List() noexcept : elements(nullptr), size(0), capacity(0)
+    List() noexcept : elements(new T[1]), size(0), capacity(1)
     {}
+    
+    // Destructor - free heap allocated memory
+    ~List() noexcept
+    {
+        delete[] elements;
+    }
 
     // Index operator getter
     const T& operator[](size_t index) const noexcept
@@ -43,7 +60,7 @@ public:
     {
         if (size >= capacity)
         {
-            resize();
+            resize(capacity * 2);
         }
 
         elements[size++] = value;
@@ -63,8 +80,25 @@ public:
                 }
                 
                 size--;
+                shrink_capacity();
                 return;
             }
+        }
+    }
+
+    bool empty() const noexcept
+    {
+        return size == 0;
+    }
+    
+    // Clear the list and shrink capacity
+    void clear() noexcept
+    {
+        size = 0;
+        
+        if (capacity > 1)
+        {
+            resize(1);
         }
     }
     
